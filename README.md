@@ -171,6 +171,12 @@ Two details that matter: require `--message-file` for a real send so a sidecar
 can exist at all (an inline `--message` string has nowhere to carry sources),
 and let dry-run bypass the gate entirely so drafting stays fast.
 
+`examples/send_slack.py` is a real sender wired this way — the one that has been
+gating live sends since 2026-07-31. It is included as evidence rather than as a
+framework: copy the ~30 lines of gate wiring, expect to replace the rest. Note it
+resolves the channel against the Slack API even to preview, so running it needs a
+token; the gate wiring itself is readable without one.
+
 ### If you use Claude Code
 
 Four mechanisms, and only one of them enforces anything. Be clear about which
