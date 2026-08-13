@@ -144,20 +144,64 @@ Everything with a path is env-overridable, and nothing personal is compiled in:
 | `VERIFY_DRAFT_AUDIT_LOG` | one row per successful send | `~/.verify-draft/send-audit.jsonl` |
 | `VERIFY_DRAFT_TIER_ZERO` | recipients needing explicit confirmation | `~/.verify-draft/tier-zero-recipients.txt` |
 
-## Wiring it into a send path
+## Wiring it in
 
 The gate is only load-bearing if it sits *inside* the thing that transmits.
-Wire it into the send script, not into a prompt or a checklist:
+A convention living in documentation gets skipped under load, and the skip is
+silent. That was true here: this gate was described as enforced for two months
+before anyone checked, and `git log -S` found it wired into nothing.
+
+So there is exactly one place it belongs — **the send script**:
 
 ```python
-report = subprocess.run([GATE, "--draft", draft_path], capture_output=True)
-if report.returncode != 0:
-    sys.exit("blocked by verify-draft")
+# in send_slack.py / send_telegram.py / wherever the API call lives
+if args.send:
+    gate = subprocess.run(
+        [GATE, "--draft", args.message_file,
+         "--audience", audience, "--channel", "slack"],
+        capture_output=True, text=True,
+    )
+    if gate.returncode != 0:
+        sys.stderr.write(gate.stderr)
+        sys.exit("blocked by verify-draft")
+    transmit(...)
 ```
 
-A convention that lives in documentation gets skipped under load, and the skip
-is silent. This was true here too: the gate was described as enforced for two
-months before anyone checked, and `git log -S` found it wired into nothing.
+Two details that matter: require `--message-file` for a real send so a sidecar
+can exist at all (an inline `--message` string has nowhere to carry sources),
+and let dry-run bypass the gate entirely so drafting stays fast.
+
+### If you use Claude Code
+
+Four mechanisms, and only one of them enforces anything. Be clear about which
+is which, because it is easy to build the comfortable ones and skip the real one.
+
+| Layer | What it does | Enforces? |
+|---|---|---|
+| **The send script** | runs the gate before transmitting | **yes — this is the whole thing** |
+| **A skill** (`.claude/skills/…`) | tells the model how to author a sidecar, which detectors bite | no |
+| **`CLAUDE.md`** | the standing rule that every draft needs a sidecar | no |
+| **A hook** | can block a tool call, but your send is a shell command it cannot inspect | not usefully |
+
+A minimal skill is enough — a `SKILL.md` describing the sidecar schema, the
+detectors that fire most often (written dates, parenthetical attributions,
+attributive verbs, internal tooling), and the instruction to write the sidecar
+*before* offering to send. The model then arrives at the send with sources
+already gathered rather than reverse-engineering them after being blocked.
+
+In `CLAUDE.md`, one paragraph: every outbound draft is paired with
+`<draft>.verifications.yaml`; the gate is strict by default; you cannot bypass
+it yourself. That last clause matters — an override flag that the model can set
+is not an override, it is a suggestion.
+
+### Layer 3 needs the CLI
+
+The optional adversarial-reviewer layer shells out to `claude -p --bare` to ask
+whether each cited source actually supports its claim — the one check that is
+semantic rather than mechanical. It needs the `claude` binary on `PATH`, and it
+degrades to `verdict: skipped` on timeout rather than blocking, so a send that
+looks hung is usually the reviewer thinking. Run with `--verify warn` for a
+while before trusting it to block.
 
 ## Tests
 
