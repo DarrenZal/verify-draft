@@ -1,0 +1,71 @@
+# House rules — the global (non-person) layer of the audience brief.
+#
+# resolve_profile.py loads this into EVERY brief, under the numeric limits and
+# the per-communication-type rules. It is the L1 tier of the promotion ladder
+# described in docs/comms-profiles-convention.md.
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# THE EVIDENCE FIELD IS THE POINT, AND THIS FILE IS SYNTHETIC.
+#
+# Every rule carries a dated `evidence:` string recording the specific incident
+# that earned it. That requirement is the invariant: a rule nobody can trace to
+# a real event is a preference someone asserted, and preferences accumulate
+# until the brief is noise.
+#
+# The evidence strings below are INVENTED, because the real ones quote named
+# people verbatim and cannot be published. Treat this file as a schema sample,
+# not as a rule set to adopt: your rules should come from your own incidents.
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# `mechanical:` binds a rule to a gate check in verify_draft.py. A rule earns
+# that binding only when it is decidable from the draft text alone, has recurred
+# at least twice or caused a real incident, and has a low false-positive rate.
+# Rules without it are advisory: they shape the brief, they do not block a send.
+
+limits:
+  group_max_words: 200        # substantive message to a group
+  group_max_words_fyi: 120    # ...tightened when the sidecar declares no ask
+  dm_warn_words: 350          # soft cap; warns rather than blocks
+  telegram_hard_chars: 4096   # platform limit
+
+voice:
+  - id: hr-voice-1
+    rule: "No em-dashes. Use a comma, a colon, or two sentences."
+    mechanical: S5
+    evidence: "2026-01-14: recipient asked whether a message was machine-written; the tell was punctuation density, not content."
+
+  - id: hr-voice-2
+    rule: "Say the uncomfortable half. If a number is uncertain, mark it uncertain in the sentence, not in a footnote."
+    evidence: "2026-02-02: a hedge moved to the end of a message was read as confidence by three of four recipients."
+
+format:
+  - id: hr-fmt-1
+    rule: "One idea per paragraph; no nested bullets in chat."
+    mechanical: S6
+    evidence: "2026-02-19: a four-level bullet tree sent to a group produced replies addressing only the top level."
+
+  - id: hr-fmt-2
+    rule: "Never name a file or repo path the recipient cannot open. Link it or carry the substance inline."
+    mechanical: S8
+    evidence: "2026-03-08: a message pointed at an internal path; two recipients had no access and did not say so for a week."
+
+ask:
+  - id: hr-ask-1
+    rule: "If the message has an ask, it goes in the first two lines. On a phone that is the whole message."
+    mechanical: S1,S2
+    evidence: "2026-03-21: a decision request in the closing paragraph of a long note went unanswered for nine days."
+
+update:
+  - id: hr-upd-1
+    rule: "At most one substantial message per group per day. A second one consolidates into the first by editing it."
+    evidence: "2026-04-02: four notes to one room in an evening; a recipient said the volume made them hard to follow."
+
+correction:
+  - id: hr-corr-1
+    rule: "Correct in place where nobody has replied yet; append a dated note where they have. Never silently rewrite a claim someone acted on."
+    evidence: "2026-05-11: a silently edited figure meant two people held different numbers in the same thread."
+
+share:
+  - id: hr-share-1
+    rule: "Before sharing a link, confirm the recipient can open it. Existence is not access."
+    evidence: "2026-06-01: a shared document required membership of a group the recipients were not in."

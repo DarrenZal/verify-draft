@@ -13,16 +13,26 @@ from __future__ import annotations
 import calendar
 import hashlib
 import json
+import os
 import subprocess
 import sys
 import time
 from pathlib import Path
 from typing import Optional
 
-AUDIT_LOG = Path.home() / ".claude" / "local" / "send-audit.jsonl"
+# Override with VERIFY_DRAFT_AUDIT_LOG. Every successful send appends one row here.
+AUDIT_LOG = Path(os.environ.get(
+    "VERIFY_DRAFT_AUDIT_LOG",
+    Path.home() / ".verify-draft" / "send-audit.jsonl",
+))
 VERIFY_SCRIPT = Path(__file__).resolve().parent / "verify_draft.py"
 ALLOWLIST_FILE = Path.home() / ".claude" / "local" / "verify-allowlist.txt"
-TIER_ZERO_FILE = Path.home() / ".claude" / "local" / "tier-zero-recipients.txt"
+# Override with VERIFY_DRAFT_TIER_ZERO. One recipient id per line; sends to these
+# require an explicit operator-pasted timestamp rather than a plain --send.
+TIER_ZERO_FILE = Path(os.environ.get(
+    "VERIFY_DRAFT_TIER_ZERO",
+    Path.home() / ".verify-draft" / "tier-zero-recipients.txt",
+))
 TIER_TWO_FILE = Path.home() / ".claude" / "local" / "tier-two-recipients.txt"
 
 
@@ -109,7 +119,7 @@ def add_verify_args(parser) -> None:
         type=int,
         default=None,
         metavar="UNIX_TS",
-        help="Operator-pasted timestamp (≤60s) confirming a Tier-0 send. Required for sensitive recipients (see ~/.claude/local/tier-zero-recipients.txt). Distinct from --skip-verify (which bypasses the gate; this confirms a gated send to a sensitive recipient).",
+        help="Operator-pasted timestamp (≤60s) confirming a Tier-0 send. Required for sensitive recipients (see the tier-zero recipients file; VERIFY_DRAFT_TIER_ZERO). Distinct from --skip-verify (which bypasses the gate; this confirms a gated send to a sensitive recipient).",
     )
 
 
@@ -585,7 +595,7 @@ def append_audit_row(
     channel: Optional[str] = None,
     action: str = "send",
 ) -> None:
-    """Append one row to ~/.claude/local/send-audit.jsonl.
+    """Append one row to the send-audit log (VERIFY_DRAFT_AUDIT_LOG).
 
     `send_status` is one of: "ok" (delivered), "dry_run" (gate passed, no send
     attempted), "failed" (send attempted but errored), "gate_blocked" (gate refused

@@ -40,6 +40,61 @@ screenful, em-dash density, and repo or file paths the recipient cannot open.
 A shape failure short-circuits before claim detection, on the reasoning that
 you fix the form before arguing about sources.
 
+## The audience layer
+
+The gate says *don't assert what you can't source*. It does not say *sound like
+yourself to this particular person*. That second job belongs to
+`comms_profiles/`.
+
+`resolve_profile.py` takes a chat id or a list of people and composes an
+**audience brief**: your own voice card, the numeric limits, one block per
+recipient drawn from their profile, the group's norms, and the rules for this
+kind of message. Two properties make it more than a preferences file:
+
+- **Conflicts are surfaced, not resolved.** If one recipient wants brevity and
+  another wants failure modes spelled out, the brief says so and leaves the
+  judgement to you. Silently averaging them produces a message that satisfies
+  neither.
+- **Guesses are labelled.** A rule mined from behaviour renders as
+  `[inferred — a guess, do not treat as their stated preference]` until someone
+  explicitly confirms it. `profile_update.py confirm` is the only promotion path.
+
+It also emits a `profile_hash` over every resolved rule, so editing a profile
+stales any brief generated before the change.
+
+```
+COMMS_CHANNELS_VAULT=./example-vault \
+COMMS_HOUSE_RULES=./house-rules.example.yaml \
+COMMS_SENDER_NAME=Sender \
+  python3 comms_profiles/resolve_profile.py --chat-id telegram:100200300 --type update
+```
+
+`example-vault/` holds a runnable four-note example. Profiles are plain Markdown
+with YAML frontmatter and live **outside** this repo — point
+`COMMS_CHANNELS_VAULT` at your own directory. No person's preferences are
+compiled into the code.
+
+## The promotion ladder
+
+Rules climb three tiers, and the criteria for climbing are the interesting part:
+
+| Tier | What it is | How it's enforced |
+|---|---|---|
+| **L0** | A lesson written in prose | Loaded by luck, enforced by nothing |
+| **L1** | A structured profile rule | Enters every audience brief |
+| **L2** | A mechanical gate check | Blocks the send |
+
+A rule earns L2 only when it is **decidable from the draft text alone**, has
+**recurred twice or caused a real incident**, and has a **low false-positive
+rate**. That last criterion matters: a check that cries wolf gets disabled, and
+a disabled check is worse than no check because people believe it is running.
+
+`house-rules.example.yaml` shows the schema, including the `mechanical:` field
+that binds a rule to its gate check. **Its evidence strings are invented.** The
+real ones quote named people verbatim and are not publishable, and a rewrite
+that replaced them with plausible-sounding fiction would corrupt the one
+invariant the schema exists to teach: every rule traces to a real event.
+
 ## The sidecar contract
 
 A draft at `note.md` expects `note.md.verifications.yaml`:
@@ -78,6 +133,16 @@ Exit codes: `0` pass · `2` unverified claims or shape failure · `3` malformed 
 
 Useful flags: `--audience group|dm` and `--channel telegram|slack|email` turn on
 Layer 3; `--shape off` skips it; `--verify warn` reports without blocking.
+
+Everything with a path is env-overridable, and nothing personal is compiled in:
+
+| Variable | What it points at | Default |
+|---|---|---|
+| `COMMS_CHANNELS_VAULT` | your profile notes | `~/Documents/Notes` |
+| `COMMS_HOUSE_RULES` | the global rule file | `house-rules.example.yaml` |
+| `COMMS_SENDER_NAME` | your own voice-card note | `Sender` |
+| `VERIFY_DRAFT_AUDIT_LOG` | one row per successful send | `~/.verify-draft/send-audit.jsonl` |
+| `VERIFY_DRAFT_TIER_ZERO` | recipients needing explicit confirmation | `~/.verify-draft/tier-zero-recipients.txt` |
 
 ## Wiring it into a send path
 

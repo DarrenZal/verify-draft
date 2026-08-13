@@ -464,7 +464,7 @@ REPO_PATH_PATTERNS = [
     ("home_dir", re.compile(_PATH_BOUNDARY + r"~/[\w./-]+", re.MULTILINE)),
 ]
 
-RESOLVE_PROFILE = Path(__file__).resolve().parent.parent / "comms-profiles" / "resolve_profile.py"
+RESOLVE_PROFILE = Path(__file__).resolve().parent / "comms_profiles" / "resolve_profile.py"
 
 
 def _config_path() -> Path:
