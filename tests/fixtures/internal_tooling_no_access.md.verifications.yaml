@@ -1,0 +1,6 @@
+verifications:
+  - claim: "There's more background in the ops-runbook"
+    source:
+      type: file
+      ref: "internal/ops-runbook.md"
+      evidence: "The runbook exists and contains the background. Deliberately does NOT assert the recipient can reach it, so the internal_tooling rule blocks the send."

@@ -1,0 +1,6 @@
+verifications:
+  - claim: "the release was cut on a Tuesday and shipped to staging"
+    source:
+      type: file
+      ref: "tests/fixtures/sources/build-log-2026-03-04.txt"
+      evidence: "Deliberately describes a claim absent from the draft: exercises a sidecar entry that binds to nothing, which is not itself a blocking condition."

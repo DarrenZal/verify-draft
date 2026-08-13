@@ -1,0 +1,6 @@
+verifications:
+  - claim: "the migration used about eleven minutes of a budgeted hour of downtime"
+    source:
+      type: file
+      ref: "tests/fixtures/sources/build-log-2026-03-04.txt"
+      evidence: "Stand-in source. This fixture exists to fail the SHAPE rules, not the sourcing ones: it is long, declares no ask, uses em-dashes, and names repo paths the recipient cannot open."

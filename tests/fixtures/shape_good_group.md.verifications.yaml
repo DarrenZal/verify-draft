@@ -1,0 +1,8 @@
+ask:
+  text: "Can someone take the staging drift before Friday?"
+verifications:
+  - claim: "the migration went out clean and used 11 minutes of a budgeted hour"
+    source:
+      type: file
+      ref: "tests/fixtures/sources/build-log-2026-03-04.txt"
+      evidence: "Synthetic build log recording a successful run; stands in as the citable source."

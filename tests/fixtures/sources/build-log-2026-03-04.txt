@@ -1,0 +1,4 @@
+[fixture] synthetic build log used as a citable source in tests.
+BUILD SUCCESSFUL in 42s
+Toolchain: temurin-21.0.2
+Test summary: 214 tests, 0 failures, 3 skipped

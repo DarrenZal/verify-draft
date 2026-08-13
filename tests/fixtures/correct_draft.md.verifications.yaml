@@ -1,0 +1,16 @@
+verifications:
+  - claim: "The nightly build went green again on 2026-03-04 after the toolchain bump"
+    source:
+      type: file
+      ref: "tests/fixtures/sources/build-log-2026-03-04.txt"
+      evidence: "The log records BUILD SUCCESSFUL for that date's run."
+  - claim: "The run finished in 42 seconds and the suite reported 214 tests with zero failures"
+    source:
+      type: file
+      ref: "tests/fixtures/sources/build-log-2026-03-04.txt"
+      evidence: "Verbatim: 'BUILD SUCCESSFUL in 42s' and 'Test summary: 214 tests, 0 failures, 3 skipped'."
+  - claim: "the toolchain is pinned to temurin-21.0.2"
+    source:
+      type: file
+      ref: "tests/fixtures/sources/build-log-2026-03-04.txt"
+      evidence: "Verbatim: 'Toolchain: temurin-21.0.2'."
