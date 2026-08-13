@@ -23,7 +23,7 @@ sys.path.insert(0, str(HERE.parent))
 
 import gate_helpers  # noqa: E402
 
-ROOM = ["telegram:3980532206"]
+ROOM = ["telegram:100200300"]
 OTHER_ROOM = ["telegram:111222333"]
 LONG_BODY = " ".join(["word"] * 120)
 SHORT_BODY = " ".join(["word"] * 20)

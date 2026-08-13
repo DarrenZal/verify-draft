@@ -6,7 +6,7 @@ Each send script:
   2. Calls `run_verification_gate(args, body_file=..., body_inline=...)` before send
   3. Calls `append_audit_row(args, skill=..., recipients=..., body=..., gate_report=..., ...)` after send (or after gate block/skip)
 
-See: ~/.claude/plans/trustable-email-stack-verification-gate.md
+Sidecar contract and rationale: see README.md
 """
 from __future__ import annotations
 
