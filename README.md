@@ -200,7 +200,15 @@ is which, because it is easy to build the comfortable ones and skip the real one
 | **The send script** | runs the gate before transmitting | **yes — this is the whole thing** |
 | **A skill** (`.claude/skills/…`) | tells the model how to author a sidecar, which detectors bite | no |
 | **`CLAUDE.md`** | the standing rule that every draft needs a sidecar | no |
-| **A hook** | can block a tool call, but your send is a shell command it cannot inspect | not usefully |
+| **A hook** | blocks a tool call, and CAN inspect an MCP tool's arguments | **yes, for MCP sends** |
+
+**When the send is an MCP tool rather than a shell command, the hook is the right
+instrument.** A `PreToolUse` hook receives the full tool input, body included, so it
+can find the matching draft on disk, run the gate, and refuse. That closes the hole
+you otherwise get the moment a mail/chat MCP server is installed alongside your gated
+send scripts: the model reaches for the tool, not the script, and nothing stops it.
+Make the disable switch an environment variable rather than a tool argument, so the
+model cannot turn off its own gate.
 
 A minimal skill is enough — a `SKILL.md` describing the sidecar schema, the
 detectors that fire most often (written dates, parenthetical attributions,
