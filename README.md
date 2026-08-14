@@ -131,8 +131,21 @@ python3 verify_draft.py --draft path/to/draft.md
 
 Exit codes: `0` pass · `2` unverified claims or shape failure · `3` malformed input.
 
-Useful flags: `--audience group|dm` and `--channel telegram|slack|email` turn on
-Layer 3; `--shape off` skips it; `--verify warn` reports without blocking.
+Flags:
+
+| Flag | Values | Does |
+|---|---|---|
+| `--audience` | `group` `dm` `email` | turns the shape layer on, and scales its limits |
+| `--channel` | `telegram` `signal` `slack` `email` | same, plus channel-specific caps |
+| `--shape` | `on` `off` | skip the shape layer |
+| `--mode` | `strict` `warn` `off` | whether unsourced claims **block** or just report |
+| `--reviewer` | `on` `off` | run the adversarial reviewer (below); off by default |
+| `--recipients` | comma list | enables S10 and the tier-zero check |
+
+One naming trap worth knowing before you read the config: **this document numbers
+shape as Layer 3, but the code reserves the name `layer3` for the adversarial
+reviewer.** So `[layer3] mode` in the config file governs the reviewer, and
+`[shape]` governs the shape rules. Different things, adjacent names.
 
 Everything with a path is env-overridable, and nothing personal is compiled in:
 
@@ -200,14 +213,23 @@ In `CLAUDE.md`, one paragraph: every outbound draft is paired with
 it yourself. That last clause matters — an override flag that the model can set
 is not an override, it is a suggestion.
 
-### Layer 3 needs the CLI
+### The adversarial reviewer needs the CLI
 
-The optional adversarial-reviewer layer shells out to `claude -p --bare` to ask
-whether each cited source actually supports its claim — the one check that is
-semantic rather than mechanical. It needs the `claude` binary on `PATH`, and it
-degrades to `verdict: skipped` on timeout rather than blocking, so a send that
-looks hung is usually the reviewer thinking. Run with `--verify warn` for a
-while before trusting it to block.
+Run it with `--reviewer on`. It shells out to `claude -p --bare` to ask whether
+each cited source actually supports its claim — the one check that is semantic
+rather than mechanical. It needs the `claude` binary on `PATH`, and it degrades
+to `verdict: skipped` on timeout rather than blocking, so a send that looks hung
+is usually the reviewer thinking.
+
+Whether a `fail` verdict *blocks* is not a flag: it comes from `[layer3] mode`
+in `~/.claude/local/verify-config.toml` (`VERIFY_CONFIG_PATH` overrides it),
+defaulting to `warn`. Leave it on `warn` for a while before trusting it to block.
+
+It earns its keep on the sidecar rather than the prose. The mechanical layers
+only ask whether a `source` block is populated; the reviewer opens the ref. In
+practice its most common catch is a row whose `ref` cannot be resolved at all —
+two paths joined by "and", a stale path, a link nobody opened — which passes
+every mechanical check while providing exactly no evidence.
 
 ## Tests
 
